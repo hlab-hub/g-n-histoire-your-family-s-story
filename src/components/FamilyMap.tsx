@@ -1,6 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, CircleMarker, Polyline, Popup, useMap } from "react-leaflet";
-import { useEffect, useMemo } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import type { Person, HistoricalEvent } from "@/lib/family-data";
 
 type Props = {
@@ -102,7 +102,7 @@ export default function FamilyMap({
           legs.push(arc([a.lat, a.lng], [b.lat, b.lng], 0.18 + i * 0.06));
         }
         return (
-          <div key={p.id}>
+          <Fragment key={p.id}>
             {legs.map((leg, i) => (
               <Polyline
                 key={`${p.id}-leg-${i}`}
@@ -171,7 +171,7 @@ export default function FamilyMap({
                 pathOptions={{ color, weight: 1.5, fillColor: "#FDFBF7", fillOpacity: 1 }}
               />
             )}
-          </div>
+          </Fragment>
         );
       })}
     </MapContainer>
