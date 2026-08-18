@@ -38,8 +38,9 @@ function lookupPlace(raw?: string): Place | undefined {
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z]/g, "");
     for (const gk of Object.keys(gazetteer)) {
-      if (key === gk || key.startsWith(gk)) {
-        return { ...gazetteer[gk], name: parts[0] };
+      const hit = gazetteer[gk];
+      if (hit && (key === gk || key.startsWith(gk))) {
+        return { ...hit, name: parts[0] ?? hit.name };
       }
     }
   }
@@ -81,8 +82,8 @@ export function parseGedcom(text: string): GedcomResult {
     if (!m) continue;
     const level = Number(m[1]);
     const pointer = m[2]?.trim();
-    const tag = m[3];
-    const value = m[4]?.trim();
+    const tag = m[3] ?? "";
+    const value = (m[4] ?? "").trim();
 
     if (level === 0) {
       cur = null;
@@ -132,7 +133,7 @@ export function parseGedcom(text: string): GedcomResult {
 
   const palette = ["#2563eb", "#b45309", "#0f766e", "#9d174d", "#7c3aed", "#a16207", "#991b1b"];
   const famColor = new Map<string, string>();
-  fams.forEach((f, i) => famColor.set(f.id, palette[i % palette.length]));
+  fams.forEach((f, i) => famColor.set(f.id, palette[i % palette.length] ?? "#64748b"));
 
   const people: Person[] = [];
   let skipped = 0;
@@ -157,15 +158,21 @@ export function parseGedcom(text: string): GedcomResult {
       name: raw.name ?? "Inconnu",
       sex: raw.sex === "F" ? "F" : "M",
       occupation: raw.occu ?? "Non renseignée",
-      coupleId: ownFam?.id,
-      fatherId: childFam?.husb?.replace(/@/g, ""),
-      motherId: childFam?.wife?.replace(/@/g, ""),
       birth: { year: by, date: raw.birtDate ?? String(by), place: bp },
-      death: dp && dy ? { year: dy, date: raw.deatDate ?? String(dy), place: dp } : undefined,
-      union:
-        mp && my && spouse
-          ? { year: my, date: ownFam?.marrDate ?? String(my), place: mp, spouseId: spouse.replace(/@/g, "") }
-          : undefined,
+      ...(ownFam ? { coupleId: ownFam.id } : {}),
+      ...(childFam?.husb ? { fatherId: childFam.husb.replace(/@/g, "") } : {}),
+      ...(childFam?.wife ? { motherId: childFam.wife.replace(/@/g, "") } : {}),
+      ...(dp && dy ? { death: { year: dy, date: raw.deatDate ?? String(dy), place: dp } } : {}),
+      ...(mp && my && spouse
+        ? {
+            union: {
+              year: my,
+              date: ownFam?.marrDate ?? String(my),
+              place: mp,
+              spouseId: spouse.replace(/@/g, ""),
+            },
+          }
+        : {}),
     });
   }
 
