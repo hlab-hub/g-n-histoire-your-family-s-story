@@ -97,7 +97,7 @@ export function HistoryTimeline({
               })}
             </div>
 
-            <div className="mt-2 space-y-1 border-t border-border pt-2">
+            <div className="mt-2 max-h-32 space-y-1 overflow-y-auto border-t border-border pt-2 pr-2">
               {people.map((p) => {
                 const from = pct(p.birth.year);
                 const to = pct(p.death?.year ?? p.birth.year + 70);

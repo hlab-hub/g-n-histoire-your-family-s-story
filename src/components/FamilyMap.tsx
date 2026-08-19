@@ -39,7 +39,11 @@ function FitBounds({ points }: { points: LatLng[] }) {
   const map = useMap();
   useEffect(() => {
     if (points.length) {
-      map.fitBounds(points as [number, number][], { padding: [90, 90], maxZoom: 7 });
+      map.fitBounds(points as [number, number][], {
+        paddingTopLeft: [380, 60],
+        paddingBottomRight: [80, 340],
+        maxZoom: 7,
+      });
     }
   }, [map, JSON.stringify(points)]);
   return null;
