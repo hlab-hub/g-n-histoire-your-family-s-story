@@ -26,7 +26,7 @@ export const couples: Couple[] = [
   { id: "c-legall", label: "Le Gall — Cariou (Bretagne)", color: "#2563eb" },
   { id: "c-rambert", label: "Rambert — Blanc (Provence)", color: "#b45309" },
   { id: "c-moreau", label: "Moreau — Chapuis (Bourgogne)", color: "#0f766e" },
-  { id: "c-fournier", label: "Fournier — Berthet (Rhône-Alpes)", color: "#9d174d" },
+  { id: "c-fournier", label: "Fournier — Bertetti (Rhône-Alpes / Piémont)", color: "#9d174d" },
   { id: "c-parents-1", label: "Le Gall — Rambert (Paris)", color: "#7c3aed" },
   { id: "c-parents-2", label: "Moreau — Fournier (Lyon)", color: "#a16207" },
   { id: "c-focus", label: "Le Gall — Moreau (Paris)", color: "#991b1b" },
@@ -56,6 +56,8 @@ const places = {
   stetienne: P("Saint-Étienne", "Rhône-Alpes", 45.4397, 4.3872),
   grenoble: P("Grenoble", "Rhône-Alpes", 45.1885, 5.7245),
   verdun: P("Verdun", "Lorraine", 49.1596, 5.3878),
+  torino: P("Turin", "Piémont", 45.0703, 7.6869),
+  cuneo: P("Cuneo", "Piémont", 44.3841, 7.5426),
 };
 
 export const people: Person[] = [
@@ -139,13 +141,15 @@ export const people: Person[] = [
   },
   {
     id: "marie-berthet",
-    name: "Marie Berthet",
+    name: "Maria Bertetti",
     sex: "F",
-    occupation: "Gantière",
+    occupation: "Ouvrière en soie",
     coupleId: "c-fournier",
-    birth: { year: 1843, date: "1er septembre 1843", place: places.grenoble },
+    birth: { year: 1843, date: "1er septembre 1843", place: places.torino },
+    residence: { year: 1863, place: places.cuneo },
     union: { year: 1866, date: "23 avril 1866", place: places.grenoble, spouseId: "emile-fournier" },
     death: { year: 1916, date: "28 mars 1916", place: places.lyon },
+    note: "Partie du Piémont après l'unité italienne, elle franchit les Alpes vers Grenoble.",
   },
 
   // Génération II — 1868-1876
@@ -271,6 +275,13 @@ export const historicalEvents: HistoricalEvent[] = [
     title: "Exode rural",
     scope: "Société",
     description: "Départ massif des campagnes vers Paris, Lyon et Marseille.",
+  },
+  {
+    year: 1861,
+    title: "Unité italienne",
+    scope: "Régional",
+    region: "Piémont",
+    description: "Proclamation du royaume d'Italie ; forte émigration piémontaise vers la France.",
   },
   {
     year: 1870,

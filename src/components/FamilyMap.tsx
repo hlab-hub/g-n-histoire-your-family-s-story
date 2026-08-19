@@ -1,7 +1,8 @@
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, CircleMarker, Polyline, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import { MapContainer, TileLayer, CircleMarker, Polyline, Popup, Marker, useMap } from "react-leaflet";
 import { Fragment, useEffect, useMemo } from "react";
-import type { Person, HistoricalEvent } from "@/lib/family-data";
+import type { Person } from "@/lib/family-data";
 
 type Props = {
   people: Person[];
@@ -9,7 +10,6 @@ type Props = {
   selectedId?: string | undefined;
   hoveredId?: string | undefined;
   onSelect: (id: string) => void;
-  events: HistoricalEvent[];
 };
 
 type LatLng = [number, number];
@@ -35,13 +35,50 @@ function arc(from: LatLng, to: LatLng, bend = 0.22): LatLng[] {
   return pts;
 }
 
+/** Screen-space bearing (deg, 0 = up) between two geo points, mercator-corrected. */
+function bearing(a: LatLng, b: LatLng) {
+  const lat = ((a[0] + b[0]) / 2) * (Math.PI / 180);
+  const dx = b[1] - a[1];
+  const dy = -(b[0] - a[0]) / Math.max(Math.cos(lat), 0.2);
+  return (Math.atan2(dx, -dy) * 180) / Math.PI;
+}
+
+function arrowIcon(color: string, angle: number, active: boolean) {
+  const size = active ? 16 : 12;
+  return L.divIcon({
+    className: "gh-arrow",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 12 12" style="transform:rotate(${angle}deg);opacity:${
+      active ? 1 : 0.6
+    }"><path d="M6 1 L10.5 10.5 L6 8 L1.5 10.5 Z" fill="${color}" stroke="${color}" stroke-width="1" stroke-linejoin="round"/></svg>`,
+  });
+}
+
+function labelIcon(lines: { name: string; color: string; active: boolean }[]) {
+  const html = lines
+    .map(
+      (l) =>
+        `<span style="color:${l.color};font-weight:${l.active ? 700 : 500};opacity:${
+          l.active ? 1 : 0.85
+        }">${l.name}</span>`,
+    )
+    .join("<br/>");
+  return L.divIcon({
+    className: "gh-label",
+    iconSize: [0, 0],
+    iconAnchor: [-10, 8],
+    html: `<div style="white-space:nowrap;font-size:11px;line-height:13px;text-shadow:0 0 3px #FDFBF7,0 0 3px #FDFBF7,0 0 5px #FDFBF7">${html}</div>`,
+  });
+}
+
 function FitBounds({ points }: { points: LatLng[] }) {
   const map = useMap();
   useEffect(() => {
     if (points.length) {
       map.fitBounds(points as [number, number][], {
         paddingTopLeft: [380, 60],
-        paddingBottomRight: [80, 340],
+        paddingBottomRight: [80, 260],
         maxZoom: 7,
       });
     }
@@ -49,23 +86,7 @@ function FitBounds({ points }: { points: LatLng[] }) {
   return null;
 }
 
-function contextFor(person: Person, events: HistoricalEvent[]) {
-  const from = person.birth.year;
-  const to = person.death?.year ?? from + 70;
-  return events
-    .filter((e) => (e.endYear ?? e.year) >= from && e.year <= to)
-    .filter((e) => !e.region || [person.birth.place.region, person.death?.place.region].includes(e.region))
-    .slice(0, 3);
-}
-
-export default function FamilyMap({
-  people,
-  colorOf,
-  selectedId,
-  hoveredId,
-  onSelect,
-  events,
-}: Props) {
+export default function FamilyMap({ people, colorOf, selectedId, hoveredId, onSelect }: Props) {
   const points = useMemo<LatLng[]>(
     () =>
       people.flatMap((p) =>
@@ -75,6 +96,18 @@ export default function FamilyMap({
       ),
     [people],
   );
+
+  /** Names grouped by birth city so co-natives stack on separate lines. */
+  const labels = useMemo(() => {
+    const groups = new Map<string, { pos: LatLng; people: Person[] }>();
+    for (const p of people) {
+      const key = `${p.birth.place.lat.toFixed(3)},${p.birth.place.lng.toFixed(3)}`;
+      const g = groups.get(key) ?? { pos: [p.birth.place.lat, p.birth.place.lng] as LatLng, people: [] };
+      g.people.push(p);
+      groups.set(key, g);
+    }
+    return [...groups.entries()];
+  }, [people]);
 
   return (
     <MapContainer
@@ -86,7 +119,7 @@ export default function FamilyMap({
       style={{ background: "var(--color-background)" }}
     >
       <TileLayer
-        attribution='&copy; OpenStreetMap, &copy; CARTO'
+        attribution="&copy; OpenStreetMap, &copy; CARTO"
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
       />
       <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png" />
@@ -107,18 +140,28 @@ export default function FamilyMap({
         }
         return (
           <Fragment key={p.id}>
-            {legs.map((leg, i) => (
-              <Polyline
-                key={`${p.id}-leg-${i}`}
-                positions={leg}
-                pathOptions={{
-                  color,
-                  weight: active ? 3.2 : 1.6,
-                  opacity: active ? 0.95 : 0.42,
-                  dashArray: i === legs.length - 1 && p.death ? "6 6" : undefined,
-                }}
-              />
-            ))}
+            {legs.map((leg, i) => {
+              const mid = leg[Math.floor(leg.length * 0.55)]!;
+              const next = leg[Math.floor(leg.length * 0.55) + 1] ?? leg[leg.length - 1]!;
+              return (
+                <Fragment key={`${p.id}-leg-${i}`}>
+                  <Polyline
+                    positions={leg}
+                    pathOptions={{
+                      color,
+                      weight: active ? 3.2 : 1.6,
+                      opacity: active ? 0.95 : 0.42,
+                      dashArray: i === legs.length - 1 && p.death ? "6 6" : undefined,
+                    }}
+                  />
+                  <Marker
+                    position={mid}
+                    icon={arrowIcon(color, bearing(mid, next), active)}
+                    interactive={false}
+                  />
+                </Fragment>
+              );
+            })}
             <CircleMarker
               center={[p.birth.place.lat, p.birth.place.lng]}
               radius={active ? 11 : 7.5}
@@ -131,7 +174,7 @@ export default function FamilyMap({
               eventHandlers={{ click: () => onSelect(p.id) }}
             >
               <Popup>
-                <div className="min-w-56 font-sans">
+                <div className="min-w-52 font-sans">
                   <p className="font-serif text-base font-semibold text-[#1E293B]">{p.name}</p>
                   <p className="text-xs italic text-[#6b6257]">{p.occupation}</p>
                   <dl className="mt-2 space-y-1 text-xs text-[#3b3730]">
@@ -152,19 +195,6 @@ export default function FamilyMap({
                       </div>
                     )}
                   </dl>
-                  <div className="mt-2 border-t border-[#e3dccd] pt-2">
-                    <p className="text-[10px] uppercase tracking-widest text-[#8a7a5c]">
-                      Contexte historique
-                    </p>
-                    <ul className="mt-1 space-y-0.5 text-xs text-[#3b3730]">
-                      {contextFor(p, events).map((e) => (
-                        <li key={e.title}>
-                          {e.year}
-                          {e.endYear ? `–${e.endYear}` : ""} · {e.title}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
                 </div>
               </Popup>
             </CircleMarker>
@@ -178,6 +208,21 @@ export default function FamilyMap({
           </Fragment>
         );
       })}
+
+      {labels.map(([key, g]) => (
+        <Marker
+          key={`label-${key}`}
+          position={g.pos}
+          interactive={false}
+          icon={labelIcon(
+            g.people.map((p) => ({
+              name: p.name,
+              color: colorOf(p),
+              active: hoveredId === p.id || selectedId === p.id,
+            })),
+          )}
+        />
+      ))}
     </MapContainer>
   );
 }
