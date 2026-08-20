@@ -189,7 +189,6 @@ function Home() {
                   selectedId={selectedId}
                   hoveredId={hoveredId}
                   onSelect={setSelectedId}
-                  events={historicalEvents}
                 />
               </Suspense>
             </ClientOnly>
@@ -208,7 +207,7 @@ function Home() {
               hoveredId={hoveredId}
               colorOf={colorOf}
               legend={legend}
-              events={historicalEvents}
+              onUpdate={updatePerson}
             />
 
             <HistoryTimeline
