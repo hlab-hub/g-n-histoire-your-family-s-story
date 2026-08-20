@@ -75,61 +75,68 @@ export function HistoryTimeline({
             </div>
 
             <div className="relative mt-1 max-h-40 space-y-0.5 overflow-y-auto pr-2">
-              {/* vertical guides for period events */}
-              {people.map((p) => {
-                const from = pct(p.birth.year);
-                const to = pct(p.death?.year ?? p.birth.year + 70);
-                const active = hoveredId === p.id || selectedId === p.id;
-                const lived = visible.filter(
-                  (e) =>
-                    (e.endYear ?? e.year) >= p.birth.year &&
-                    e.year <= (p.death?.year ?? p.birth.year + 70) &&
-                    (!e.region ||
-                      [p.birth.place.region, p.residence?.place.region, p.death?.place.region].includes(
-                        e.region,
-                      )),
-                );
-                return (
-                  <div
-                    key={p.id}
-                    className="group relative flex h-6 cursor-pointer items-center rounded-sm hover:bg-muted/60"
-                    onMouseEnter={() => onHover(p.id)}
-                    onMouseLeave={() => onHover(undefined)}
-                    onClick={() => onSelect(p.id)}
-                  >
-                    <div
-                      className="absolute rounded-full transition-all"
-                      style={{
-                        left: `${from}%`,
-                        width: `${Math.max(to - from, 0.5)}%`,
-                        background: colorOf(p),
-                        opacity: active ? 1 : 0.4,
-                        height: active ? 10 : 8,
-                      }}
-                    />
-                    {lived.map((e) => {
-                      const left = pct(e.year);
-                      const width = Math.max(pct(e.endYear ?? e.year) - left, 0.35);
-                      return (
+              {selectedId ? (
+                people
+                  .filter((p) => p.id === selectedId)
+                  .map((p) => {
+                    const from = pct(p.birth.year);
+                    const to = pct(p.death?.year ?? p.birth.year + 70);
+                    const active = hoveredId === p.id || selectedId === p.id;
+                    const lived = visible.filter(
+                      (e) =>
+                        (e.endYear ?? e.year) >= p.birth.year &&
+                        e.year <= (p.death?.year ?? p.birth.year + 70) &&
+                        (!e.region ||
+                          [p.birth.place.region, p.residence?.place.region, p.death?.place.region].includes(
+                            e.region,
+                          )),
+                    );
+                    return (
+                      <div
+                        key={p.id}
+                        className="group relative flex h-6 cursor-pointer items-center rounded-sm hover:bg-muted/60"
+                        onMouseEnter={() => onHover(p.id)}
+                        onMouseLeave={() => onHover(undefined)}
+                        onClick={() => onSelect(p.id)}
+                      >
                         <div
-                          key={`${p.id}-${e.title}`}
-                          title={`${e.year}${e.endYear ? `–${e.endYear}` : ""} · ${e.title} — ${e.description}`}
-                          className="absolute top-1/2 -translate-y-1/2 overflow-hidden rounded-[2px] border border-accent/70 bg-accent/30 px-0.5 text-[9px] leading-[14px] text-foreground"
-                          style={{ left: `${left}%`, width: `${width}%`, height: 14 }}
+                          className="absolute rounded-full transition-all"
+                          style={{
+                            left: `${from}%`,
+                            width: `${Math.max(to - from, 0.5)}%`,
+                            background: colorOf(p),
+                            opacity: active ? 1 : 0.4,
+                            height: active ? 10 : 8,
+                          }}
+                        />
+                        {lived.map((e) => {
+                          const left = pct(e.year);
+                          const width = Math.max(pct(e.endYear ?? e.year) - left, 0.35);
+                          return (
+                            <div
+                              key={`${p.id}-${e.title}`}
+                              title={`${e.year}${e.endYear ? `–${e.endYear}` : ""} · ${e.title} — ${e.description}`}
+                              className="absolute top-1/2 -translate-y-1/2 overflow-hidden rounded-[2px] border border-accent/70 bg-accent/30 px-0.5 text-[9px] leading-[14px] text-foreground"
+                              style={{ left: `${left}%`, width: `${width}%`, height: 14 }}
+                            >
+                              <span className="whitespace-nowrap">{e.title}</span>
+                            </div>
+                          );
+                        })}
+                        <span
+                          className="absolute whitespace-nowrap text-[10px] font-medium text-foreground"
+                          style={{ left: `calc(${to}% + 8px)`, opacity: active ? 1 : 0.7 }}
                         >
-                          <span className="whitespace-nowrap">{e.title}</span>
-                        </div>
-                      );
-                    })}
-                    <span
-                      className="absolute whitespace-nowrap text-[10px] font-medium text-foreground"
-                      style={{ left: `calc(${to}% + 8px)`, opacity: active ? 1 : 0.7 }}
-                    >
-                      {p.name} · {p.birth.year}–{p.death?.year ?? "?"}
-                    </span>
-                  </div>
-                );
-              })}
+                          {p.name} · {p.birth.year}–{p.death?.year ?? "?"}
+                        </span>
+                      </div>
+                    );
+                  })
+              ) : (
+                <p className="py-6 text-center text-xs text-muted-foreground">
+                  Sélectionnez un individu sur la carte ou dans le panneau pour afficher sa frise historique.
+                </p>
+              )}
             </div>
           </div>
         )}
