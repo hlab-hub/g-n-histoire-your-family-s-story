@@ -26,6 +26,12 @@ const gazetteer: Record<string, Place> = {
   verdun: { name: "Verdun", region: "Lorraine", lat: 49.1596, lng: 5.3878 },
   limoges: { name: "Limoges", region: "Limousin", lat: 45.8336, lng: 1.2611 },
   clermont: { name: "Clermont-Ferrand", region: "Auvergne", lat: 45.7772, lng: 3.087 },
+  turin: { name: "Turin", region: "Piémont", lat: 45.0703, lng: 7.6869 },
+  torino: { name: "Turin", region: "Piémont", lat: 45.0703, lng: 7.6869 },
+  cuneo: { name: "Cuneo", region: "Piémont", lat: 44.3841, lng: 7.5426 },
+  milan: { name: "Milan", region: "Lombardie", lat: 45.4642, lng: 9.19 },
+  genes: { name: "Gênes", region: "Ligurie", lat: 44.4056, lng: 8.9463 },
+  rome: { name: "Rome", region: "Latium", lat: 41.9028, lng: 12.4964 },
 };
 
 function lookupPlace(raw?: string): Place | undefined {

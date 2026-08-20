@@ -55,7 +55,10 @@ function Home() {
     [all, focusId],
   );
   const span = useMemo(() => spanOf(visible), [visible]);
-  const selected = visible.find((p) => p.id === selectedId);
+  const selected = all.find((p) => p.id === selectedId);
+
+  const updatePerson = (id: string, patch: Partial<Person>) =>
+    setDataset((prev) => (prev ?? []).map((p) => (p.id === id ? { ...p, ...patch } : p)));
 
   const colorOf = (p: Person) =>
     (p.coupleId ? gedcomCoupleColors.get(p.coupleId) : undefined) ??
@@ -186,7 +189,6 @@ function Home() {
                   selectedId={selectedId}
                   hoveredId={hoveredId}
                   onSelect={setSelectedId}
-                  events={historicalEvents}
                 />
               </Suspense>
             </ClientOnly>
@@ -205,7 +207,7 @@ function Home() {
               hoveredId={hoveredId}
               colorOf={colorOf}
               legend={legend}
-              events={historicalEvents}
+              onUpdate={updatePerson}
             />
 
             <HistoryTimeline

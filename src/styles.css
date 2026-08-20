@@ -168,3 +168,9 @@
     box-shadow: var(--shadow-panel);
   }
 }
+
+.leaflet-div-icon.gh-label,
+.leaflet-div-icon.gh-arrow {
+  background: transparent;
+  border: 0;
+}

@@ -158,6 +158,7 @@ export default function FamilyMap({ people, colorOf, selectedId, hoveredId, onSe
                     position={mid}
                     icon={arrowIcon(color, bearing(mid, next), active)}
                     interactive={false}
+                    keyboard={false}
                   />
                 </Fragment>
               );
@@ -214,6 +215,7 @@ export default function FamilyMap({ people, colorOf, selectedId, hoveredId, onSe
           key={`label-${key}`}
           position={g.pos}
           interactive={false}
+          keyboard={false}
           icon={labelIcon(
             g.people.map((p) => ({
               name: p.name,

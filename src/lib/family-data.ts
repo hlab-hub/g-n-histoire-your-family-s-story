@@ -24,7 +24,7 @@ export type Couple = { id: string; label: string; color: string };
 
 export const couples: Couple[] = [
   { id: "c-legall", label: "Le Gall — Cariou (Bretagne)", color: "#2563eb" },
-  { id: "c-rambert", label: "Rambert — Blanc (Provence)", color: "#b45309" },
+  { id: "c-rambert", label: "Rambert — Bianchi (Provence / Piémont)", color: "#b45309" },
   { id: "c-moreau", label: "Moreau — Chapuis (Bourgogne)", color: "#0f766e" },
   { id: "c-fournier", label: "Fournier — Bertetti (Rhône-Alpes / Piémont)", color: "#9d174d" },
   { id: "c-parents-1", label: "Le Gall — Rambert (Paris)", color: "#7c3aed" },
@@ -98,13 +98,15 @@ export const people: Person[] = [
   },
   {
     id: "josephine-blanc",
-    name: "Joséphine Blanc",
+    name: "Giuseppina Bianchi",
     sex: "F",
-    occupation: "Couturière",
+    occupation: "Couturière et brodeuse",
     coupleId: "c-rambert",
-    birth: { year: 1849, date: "8 juillet 1849", place: places.avignon },
+    birth: { year: 1849, date: "8 juillet 1849", place: places.torino },
+    residence: { year: 1869, place: places.cuneo },
     union: { year: 1871, date: "18 octobre 1871", place: places.avignon, spouseId: "honore-rambert" },
     death: { year: 1922, date: "4 avril 1922", place: places.arles },
+    note: "Née à Turin, elle rejoint la Provence par la route du littoral avant son mariage à Avignon.",
   },
   {
     id: "jacques-moreau",
@@ -141,15 +143,13 @@ export const people: Person[] = [
   },
   {
     id: "marie-berthet",
-    name: "Maria Bertetti",
+    name: "Marie Berthet",
     sex: "F",
-    occupation: "Ouvrière en soie",
+    occupation: "Gantière",
     coupleId: "c-fournier",
-    birth: { year: 1843, date: "1er septembre 1843", place: places.torino },
-    residence: { year: 1863, place: places.cuneo },
+    birth: { year: 1843, date: "1er septembre 1843", place: places.grenoble },
     union: { year: 1866, date: "23 avril 1866", place: places.grenoble, spouseId: "emile-fournier" },
     death: { year: 1916, date: "28 mars 1916", place: places.lyon },
-    note: "Partie du Piémont après l'unité italienne, elle franchit les Alpes vers Grenoble.",
   },
 
   // Génération II — 1868-1876
