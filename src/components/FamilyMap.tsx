@@ -215,6 +215,7 @@ export default function FamilyMap({ people, colorOf, selectedId, hoveredId, onSe
           key={`label-${key}`}
           position={g.pos}
           interactive={false}
+          keyboard={false}
           icon={labelIcon(
             g.people.map((p) => ({
               name: p.name,
